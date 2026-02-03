@@ -1,0 +1,358 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Potion Shop Floorplan (CSS Grid)</title>
+  <style>
+    :root{
+      --cell: 26px;           /* tile size */
+      --gap: 2px;             /* grid gap */
+      --border: #1f2937;      /* slate-800 */
+      --bg: #0b1020;          /* deep night */
+      --panel: #0f172a;       /* slate-900 */
+      --text: #e5e7eb;        /* gray-200 */
+      --muted: #94a3b8;       /* slate-400 */
+    }
+
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+      background: radial-gradient(1200px 800px at 20% 10%, #111b3a 0%, var(--bg) 55%, #070a14 100%);
+      color: var(--text);
+      display:flex;
+      align-items:flex-start;
+      justify-content:center;
+      padding:24px;
+    }
+
+    .wrap{
+      width:min(1100px, 100%);
+      display:grid;
+      grid-template-columns: 1fr 320px;
+      gap:16px;
+    }
+
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:16px;
+      box-shadow: 0 18px 60px rgba(0,0,0,.45);
+      overflow:hidden;
+    }
+
+    header{
+      padding:14px 16px;
+      border-bottom:1px solid rgba(255,255,255,.10);
+      display:flex;
+      justify-content:space-between;
+      align-items:baseline;
+      gap:12px;
+    }
+    header h1{
+      font-size:16px;
+      margin:0;
+      letter-spacing:.4px;
+      text-transform:uppercase;
+    }
+    header .sub{
+      font-size:12px;
+      color: var(--muted);
+      white-space:nowrap;
+    }
+
+    /* Floor container */
+    .stage{
+      padding:16px;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      overflow:auto;
+    }
+
+    /* The grid: 32 columns x 20 rows */
+    .grid{
+      display:grid;
+      grid-template-columns: repeat(32, var(--cell));
+      grid-template-rows: repeat(20, var(--cell));
+      gap: var(--gap);
+      background: rgba(0,0,0,.25);
+      padding: calc(var(--gap) * 2);
+      border-radius: 14px;
+      outline: 1px solid rgba(255,255,255,.12);
+      position:relative;
+    }
+
+    /* Base tile */
+    .tile{
+      width: var(--cell);
+      height: var(--cell);
+      border-radius: 6px;
+      position:relative;
+      user-select:none;
+      box-sizing:border-box;
+      border:1px solid rgba(255,255,255,.06);
+    }
+
+    /* Tile types (colors kept subtle, readable with text) */
+    .floor{ background: rgba(148,163,184,.14); }
+    .wall { background: rgba(31,41,55,.95); border-color: rgba(255,255,255,.08); }
+    .door { background: rgba(234,179,8,.20); border-color: rgba(234,179,8,.35); }
+    .counter { background: rgba(99,102,241,.18); border-color: rgba(99,102,241,.30); }
+    .shelf { background: rgba(34,197,94,.16); border-color: rgba(34,197,94,.30); }
+    .work { background: rgba(236,72,153,.16); border-color: rgba(236,72,153,.30); }
+    .hazard { background: rgba(239,68,68,.16); border-color: rgba(239,68,68,.30); }
+    .water { background: rgba(56,189,248,.16); border-color: rgba(56,189,248,.30); }
+    .secret { background: rgba(167,139,250,.16); border-color: rgba(167,139,250,.30); }
+    .void { background: transparent; border-color: transparent; }
+
+    /* Labels on special tiles */
+    .tile[data-label]::after{
+      content: attr(data-label);
+      position:absolute;
+      inset:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:11px;
+      color: rgba(255,255,255,.88);
+      text-shadow: 0 1px 0 rgba(0,0,0,.55);
+      letter-spacing:.2px;
+    }
+
+    /* Room labels (placed on top of grid) */
+    .room-label{
+      position:absolute;
+      font-size:12px;
+      color: rgba(255,255,255,.92);
+      background: rgba(15,23,42,.75);
+      border: 1px solid rgba(255,255,255,.10);
+      border-radius: 999px;
+      padding: 4px 10px;
+      backdrop-filter: blur(6px);
+      box-shadow: 0 8px 24px rgba(0,0,0,.35);
+      pointer-events:none;
+      white-space:nowrap;
+    }
+
+    /* Legend */
+    .legend{
+      padding:16px;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+    }
+    .legend h2{
+      font-size:14px;
+      margin:0;
+      letter-spacing:.3px;
+      text-transform:uppercase;
+      color: rgba(255,255,255,.90);
+    }
+    .legend p{
+      margin:0;
+      color: var(--muted);
+      font-size:12px;
+      line-height:1.35;
+    }
+    .key{
+      display:grid;
+      grid-template-columns: 18px 1fr;
+      gap:10px;
+      align-items:center;
+      padding:10px 10px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,.08);
+      background: rgba(0,0,0,.18);
+    }
+    .swatch{
+      width:18px;height:18px;border-radius:6px;border:1px solid rgba(255,255,255,.18);
+    }
+    .key .name{
+      font-size:13px;
+      color: rgba(255,255,255,.92);
+      margin:0;
+      line-height:1.1;
+    }
+    .key .desc{
+      margin:2px 0 0 0;
+      font-size:12px;
+      color: var(--muted);
+      line-height:1.2;
+    }
+
+    /* Responsive: stack legend under */
+    @media (max-width: 980px){
+      .wrap{ grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="card">
+      <header>
+        <h1>Mistle & Moon Apothecary</h1>
+        <div class="sub">32×20 tiles • Sales Floor + Back Lab + Cellar Hatch</div>
+      </header>
+
+      <div class="stage">
+        <div class="grid" id="grid" aria-label="Potion shop floorplan grid">
+          <!-- Room labels (absolute) -->
+          <div class="room-label" style="left: 6%; top: 6%;">Front Windows</div>
+          <div class="room-label" style="left: 34%; top: 28%;">Sales Floor</div>
+          <div class="room-label" style="left: 62%; top: 54%;">Back Lab (Hot)</div>
+          <div class="room-label" style="left: 70%; top: 78%;">Cellar Hatch</div>
+        </div>
+      </div>
+    </section>
+
+    <aside class="card">
+      <div class="legend">
+        <h2>Legend</h2>
+        <p>Hover any tile to see its type. This is data-driven: swap the MAP strings to generate new layouts.</p>
+
+        <div class="key">
+          <span class="swatch floor"></span>
+          <div>
+            <p class="name">Floor</p>
+            <p class="desc">Walkable area, public access</p>
+          </div>
+        </div>
+
+        <div class="key">
+          <span class="swatch wall"></span>
+          <div>
+            <p class="name">Wall</p>
+            <p class="desc">Solid barrier</p>
+          </div>
+        </div>
+
+        <div class="key">
+          <span class="swatch door"></span>
+          <div>
+            <p class="name">Door</p>
+            <p class="desc">Entrance/exit or internal access</p>
+          </div>
+        </div>
+
+        <div class="key">
+          <span class="swatch shelf"></span>
+          <div>
+            <p class="name">Shelves</p>
+            <p class="desc">Potion racks, herb drawers, labeled stock</p>
+          </div>
+        </div>
+
+        <div class="key">
+          <span class="swatch counter"></span>
+          <div>
+            <p class="name">Counter</p>
+            <p class="desc">Checkout, ward-stone, ledger space</p>
+          </div>
+        </div>
+
+        <div class="key">
+          <span class="swatch work"></span>
+          <div>
+            <p class="name">Work / Prep</p>
+            <p class="desc">Mortar, scales, bottling bench</p>
+          </div>
+        </div>
+
+        <div class="key">
+          <span class="swatch hazard"></span>
+          <div>
+            <p class="name">Hazard</p>
+            <p class="desc">Burners, still, volatile storage</p>
+          </div>
+        </div>
+
+        <div class="key">
+          <span class="swatch water"></span>
+          <div>
+            <p class="name">Water</p>
+            <p class="desc">Safety barrel / wash station</p>
+          </div>
+        </div>
+
+        <div class="key">
+          <span class="swatch secret"></span>
+          <div>
+            <p class="name">Secret</p>
+            <p class="desc">Hidden hatch / concealed access</p>
+          </div>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <script>
+    // 32 columns × 20 rows.
+    // Legend of chars:
+    //  . = floor, # = wall, D = door, S = shelf, C = counter, W = work, H = hazard, A = water, X = secret hatch, ' ' = void
+    const MAP = [
+      "################################",
+      "#SSSSSSSS....SSSSSSSS....SSSSS#",
+      "#SSSSSSSS....SSSSSSSS....SSSSS#",
+      "#....D......................A.#",
+      "#..............................#",
+      "#..SSSS....WWWW....SSSS..CCCC..#",
+      "#..SSSS....WWWW....SSSS..CCCC..#",
+      "#..........WWWW...........CC...#",
+      "#....SSSS..........SSSS........#",
+      "#....SSSS....TTTT..SSSS........#",
+      "#............TTTT..............#",
+      "#......CCCCCCCCCC..............#",
+      "#......CCCCCCCCCC....D.........#",
+      "#....................###########",
+      "###########..###################",
+      "#HHHHH..W...#.................X#",
+      "#HHHHH..W...#..WWWW..SSSSSS....#",
+      "#HHHHH..W...#..WWWW..SSSSSS....#",
+      "#......A....#.............D....#",
+      "################################"
+    ];
+
+    // Optional: "T" (demo table) uses work styling but label it.
+    // Keep it simple: treat T like work.
+    const tileType = (ch) => {
+      switch(ch){
+        case "#": return { cls: "wall", label: "" };
+        case ".": return { cls: "floor", label: "" };
+        case "D": return { cls: "door", label: "D" };
+        case "S": return { cls: "shelf", label: "" };
+        case "C": return { cls: "counter", label: "" };
+        case "W": return { cls: "work", label: "" };
+        case "T": return { cls: "work", label: "T" };
+        case "H": return { cls: "hazard", label: "" };
+        case "A": return { cls: "water", label: "A" };
+        case "X": return { cls: "secret", label: "X" };
+        case " ": return { cls: "void", label: "" };
+        default:  return { cls: "floor", label: "" };
+      }
+    };
+
+    const grid = document.getElementById("grid");
+    const cols = 32;
+
+    // Render tiles
+    for (let r = 0; r < MAP.length; r++){
+      const row = MAP[r];
+      for (let c = 0; c < cols; c++){
+        const ch = row[c] ?? " ";
+        const t = tileType(ch);
+
+        const el = document.createElement("div");
+        el.className = `tile ${t.cls}`;
+        if (t.label) el.dataset.label = t.label;
+
+        // Tooltip
+        el.title = `(${c+1}, ${r+1}) • ${t.cls}${t.label ? " • " + t.label : ""}`;
+
+        grid.appendChild(el);
+      }
+    }
+  </script>
+</body>
+</html>
